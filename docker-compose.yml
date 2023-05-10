@@ -1,0 +1,26 @@
+version: '3.8'
+services:
+  mariadb:
+    image: mariadb:10.7
+    volumes:
+      - ./volumes/mariadb/:/var/lib/mysql
+    environment:
+      MYSQL_DATABASE: kimai
+      MYSQL_USER: kimai
+      MYSQL_PASSWORD: password
+      MYSQL_ROOT_PASSWORD: password
+    healthcheck:
+      test: "/usr/bin/mysql --user=kimai --password=password --execute \"SHOW DATABASES;\""
+      interval: 3s
+      timeout: 1s
+      retries: 5
+
+  kimai2:
+    image: kimai/kimai2:apache-1.30.11-prod
+    environment:
+      DATABASE_URL: mysql://kimai:password@mariadb:3306/kimai
+    ports:
+      - 8001:8001
+    depends_on:
+      mariadb:
+        condition: service_healthy
